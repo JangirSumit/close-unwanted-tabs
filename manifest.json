@@ -1,0 +1,56 @@
+{
+  "name": "StrictTabs",
+  "version": "0.0.3",
+  "description": "",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "./index.html",
+    "default_title": "Open the popup",
+    "default_icon": "./demo.png"
+  },
+  "author": "Sumit Jangir",
+  "icons": {
+    "16": "./icons/stamp_16px.png",
+    "48": "./icons/stamp_48px.png",
+    "128": "./icons/stamp_128px.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';",
+    "sandbox": "sandbox allow-scripts; script-src 'self' 'unsafe-eval'; object-src 'self';"
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "content_scripts": [
+    {
+      "run_at": "document_start",
+      "all_frames": true,
+      "js": ["js/content.js"],
+      "css": ["css/content.css"],
+      "matches": ["file://*/*", "http://*/*", "https://*/*"],
+      "match_about_blank": true
+    },
+    {
+      "run_at": "document_start",
+      "js": ["js/content.js"],
+      "css": ["css/content.css"],
+      "matches": ["file://*/*", "http://*/*", "https://*/*"],
+      "match_about_blank": true
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "webNavigation",
+    "webRequest",
+    "scripting",
+    "system.display"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "web_accessible_resources": [
+    {
+      "resources": [],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
