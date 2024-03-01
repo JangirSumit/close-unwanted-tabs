@@ -1,0 +1,16 @@
+{
+  "name": "Restrict Tabs",
+  "version": "0.0.3",
+  "description": "Remove Unwanted Tabs",
+  "manifest_version": 3,
+  "author": "Sumit Jangir",
+  "icons": {
+    "16": "./icons/stamp_16px.png",
+    "48": "./icons/stamp_48px.png",
+    "128": "./icons/stamp_128px.png"
+  },
+  "background": {
+    "service_worker": "./js/background.js"
+  },
+  "permissions": ["tabs"]
+}
