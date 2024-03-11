@@ -2,41 +2,29 @@
 let validUrls = [];
 let clientIP = "";
 
-// Load the valid URLs from the JSON file
-fetch(chrome.runtime.getURL("./js/valid_urls.json"))
-  .then((response) => response.json())
-  .then((data) => {
-    validUrls = data.valid_urls;
-  })
-  .catch((error) => console.error("Error loading valid URLs:", error));
-
 chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
   if (changeInfo.url) {
     // Call the function to validate the URL
-    await validateTabURL(tabId, changeInfo.url);
+    validateTabURL(tabId, changeInfo.url);
   }
 });
 
-async function validateTabURL(tabId, url) {
+function validateTabURL(tabId, url) {
   if (!url || url.startsWith("chrome://") || url.startsWith("edge://")) {
     return;
   }
 
   // Check if the URL is in the list of valid URLs
-  const isValid = validUrls.some((_) => url.includes(_));
-
-  if (!isValid) {
-    // Close the tab if it's not valid
-    await makePostRequest(url);
-
-    chrome.tabs.remove(tabId, function () {
-      console.log("Closed invalid tab: ", url);
-    });
+  function generateGuid() {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        let r = (Math.random() * 16) | 0,
+          v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
   }
-}
-
-async function makePostRequest(url) {
-  const apiUrl = "https://manvindarsingh.bsite.net/appinfo";
 
   const userDetails = {
     Id: generateGuid(),
@@ -46,26 +34,8 @@ async function makePostRequest(url) {
     User: clientIP,
   };
 
-  try {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userDetails),
-      referrer: "",
-      referrerPolicy: "no-referrer",
-    });
-
-    if (!response.ok) {
-      throw new Error(`API request failed with status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("POST Response:", data);
-  } catch (error) {
-    console.error("API Error:", error.message);
-  }
+  // Close the tab if it's not valid
+  sendMessageToContentScript(tabId, userDetails, url);
 }
 
 function makeApiCall() {
@@ -102,10 +72,26 @@ chrome.runtime.onInstalled.addListener(() => {
   makeApiCall();
 });
 
-function generateGuid() {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    let r = (Math.random() * 16) | 0,
-      v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
+// Function to send a message to the content script
+function sendMessageToContentScript(tabId, message, urlToCheck) {
+  chrome.tabs.sendMessage(tabId, {
+    action: "updateData",
+    data: message,
+    urlToCheck: urlToCheck,
   });
 }
+
+chrome.runtime.onMessage.addListener(async (message, sender) => {
+  if (message.action === "isValidUrl") {
+    console.log(message, sender);
+    const isValid = message.data;
+
+    if (!isValid) {
+      console.log("in valid URL");
+
+      chrome.tabs.remove(sender.tab.id, function () {
+        console.log("Closed invalid tab: ", sender.tab.url);
+      });
+    }
+  }
+});
