@@ -28,7 +28,7 @@ function validateTabURL(tabId, url) {
 
   const userDetails = {
     Id: generateGuid(),
-    Date: new Date(),
+    Date: getDateTime(),
     AppName: url,
     Summary: "",
     User: clientIP,
@@ -36,6 +36,28 @@ function validateTabURL(tabId, url) {
 
   // Close the tab if it's not valid
   sendMessageToContentScript(tabId, userDetails, url);
+}
+
+function getDateTime() {
+  const date = new Date();
+  // Ensure the input is a valid Date object
+  if (!(date instanceof Date) || isNaN(date)) {
+    return 'Invalid Date';
+  }
+
+  // Get individual components of the date
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is zero-based
+  const year = date.getFullYear();
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  // Format the date and time
+  const formattedDateTime = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+
+  return formattedDateTime;
 }
 
 function makeApiCall() {

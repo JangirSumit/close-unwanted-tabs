@@ -35,11 +35,8 @@ async function updateData(data) {
       throw new Error(`API request failed with status: ${response.status}`);
     }
 
-    const data = await response.json();
-    console.log("POST Response:", data);
-  } catch (error) {
-    console.error("API Error:", error.message);
-  }
+    await response.json();
+  } catch (error) {}
 }
 
 async function getValidUrl() {
